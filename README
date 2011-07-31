@@ -1,13 +1,13 @@
 # TodoClj
 
-FIXME: write description
+A todo manager written in Clojure. This is my attempt to learn Clojure.
 
 ## Usage
 
-FIXME: write
+I need to write some code first
 
 ## License
 
-Copyright (C) 2011 FIXME
+Copyright (C) 2011 Josh Comer
 
 Distributed under the Eclipse Public License, the same as Clojure.
