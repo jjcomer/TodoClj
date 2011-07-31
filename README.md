@@ -1,12 +1,12 @@
-# TodoClj
+#TodoClj#
 
 A todo manager written in Clojure. This is my attempt to learn Clojure.
 
-## Usage
+##Usage##
 
 I need to write some code first
 
-## License
+##License##
 
 Copyright (C) 2011 Josh Comer
 
