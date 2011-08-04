@@ -1,3 +1,5 @@
+;; Josh Comer - 2011
+
 (ns TodoClj.core
 	(:require [clojure.contrib [duck-streams :as io]]))
 
@@ -14,4 +16,4 @@
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
-	(map #(parse-line (str "[" % "]")) (io/read-lines file-location)))
+	(map #(parse-line (read-line (str "[" % "]"))) (io/read-lines file-location)))
