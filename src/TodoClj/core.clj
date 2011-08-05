@@ -1,7 +1,8 @@
 ;; Josh Comer - 2011
 
 (ns TodoClj.core
-	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string]))
+	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string])
+	(:gen-class))
 
 (def file-location "Todo.txt")
 (def context-regex #"@\S+")
@@ -32,20 +33,37 @@
 	(let [description (apply str (interpose " " raw-desc))]
 		{ :state
 			(if (= "X" type)
-			:done
-			:todo)
+				:done
+				:todo)
 		  :priority
 		  	(find-priority type)
 		  :date
 		  	(find-date (first raw-desc))
 		  :contexts
-		  	(find-prefixed-words context-symbol raw-desc)
+		  	(find-prefixed-words context-regex raw-desc)
 		  :projects
-		  	(find-prefixed-words project-symbol raw-desc)
+		  	(find-prefixed-words project-regex raw-desc)
 		  :description
 		    description}))
+
+(defn pretty-print
+	"Convert a todo map into a string"
+	[{ state :state priority :priority date :date description :description}]
+	(let [state-text (if(= :done state) "X" "")
+		  priority-text (if (not (nil? priority)) (str "(" priority ")") "")]
+		(apply str (interpose " " [state-text priority-text date description]))))
 
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
-	(map #(parse-line (read-line (str "[" % "]"))) (io/read-lines file-location)))
+	(map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
+
+(defn write-out-file
+	"Write the pretty print version of the Todo Items to a file"
+	[todo-items file-location]
+	(io/write-lines file-location (map #(string/trim (pretty-print %)) todo-items)))
+
+(defn -main [& args]
+	(let [todos (read-in-file "Todo.in.txt")]
+		(write-out-file todos "Todo.out.txt")))
+
