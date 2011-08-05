@@ -1,17 +1,49 @@
 ;; Josh Comer - 2011
 
 (ns TodoClj.core
-	(:require [clojure.contrib [duck-streams :as io]]))
+	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string]))
 
 (def file-location "Todo.txt")
+(def context-regex #"@\S+")
+(def project-regex #"\+\S+")
+(def priority-regex #"\([A-Za-z]\)")
+(def date-regex #"\d{4}-\d{2}-\d{2}")
+
+(defn find-prefixed-words
+	"Given the description of a task a set will be built with all prefixed words"
+	[regex description]
+	(let [matches (set (filter #(not (nil? %)) (map #(re-find regex %) description)))]
+		(map #(.substring % 1) matches)))
+
+(defn find-priority
+	[text]
+	(let [match (re-find priority-regex text)]
+		(if (nil? match)
+			nil
+			(string/upper-case (.substring match 1 2)))))
+
+(defn find-date
+	[text]
+	(re-find date-regex text))
 
 (defn parse-line
 	"This function is to be used in the mapping of the file"
 	[[type & raw-desc]]
 	(let [description (apply str (interpose " " raw-desc))]
-		(if (= "T" type)
-			[:Todo description]
-			[:Done description])))
+		{ :state
+			(if (= "X" type)
+			:done
+			:todo)
+		  :priority
+		  	(find-priority type)
+		  :date
+		  	(find-date (first raw-desc))
+		  :contexts
+		  	(find-prefixed-words context-symbol raw-desc)
+		  :projects
+		  	(find-prefixed-words project-symbol raw-desc)
+		  :description
+		    description}))
 
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
