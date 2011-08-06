@@ -1,7 +1,7 @@
 ;; Josh Comer - 2011
 
 (ns TodoClj.core
-	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string])
+	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string] [fs] [TodoClj.colour :as colour])
 	(:gen-class))
 
 (def file-location "Todo.txt")
@@ -56,14 +56,19 @@
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
-	(map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
+	(if (fs/exists? file-location)
+		(map #(parse-line (string/split % #" ")) (io/read-lines file-location))
+		[]))
 
 (defn write-out-file
 	"Write the pretty print version of the Todo Items to a file"
 	[todo-items file-location]
 	(io/write-lines file-location (map #(string/trim (pretty-print %)) todo-items)))
 
-(defn -main [& args]
-	(let [todos (read-in-file "Todo.in.txt")]
-		(write-out-file todos "Todo.out.txt")))
+(defn -main [command & args]
+	(case (string/lower-case command)
+		"list" []
+		"ls" (println (colour/add-colour colour/boldred colour/blue "Hello World"))
+		"create" []
+		"update" []))
 
