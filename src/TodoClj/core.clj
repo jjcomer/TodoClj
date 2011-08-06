@@ -1,7 +1,7 @@
 ;; Josh Comer - 2011
 
 (ns TodoClj.core
-	(:require [clojure.contrib [duck-streams :as io]] [clojure.string :as string] [fs] [TodoClj.colour :as colour])
+	(:require [clojure.contrib [duck-streams :as io] [seq-utils :as seq]] [clojure.string :as string] [fs] [cljcolour :as colour])
 	(:gen-class))
 
 (def file-location "Todo.txt")
@@ -57,7 +57,7 @@
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
 	(if (fs/exists? file-location)
-		(map #(parse-line (string/split % #" ")) (io/read-lines file-location))
+		(seq/indexed (map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
 		[]))
 
 (defn write-out-file
@@ -69,6 +69,6 @@
 	(case (string/lower-case command)
 		"list" []
 		"ls" (println (colour/add-colour colour/boldred colour/blue "Hello World"))
-		"create" []
+		"add" (println (colour/add-colour colour/boldblue colour/purple (first args)))
 		"update" []))
 
