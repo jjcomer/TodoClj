@@ -113,13 +113,24 @@
 			  (map #(format "%03d:\t%s%n" (first %) (second %)))
 			  (apply println))))
 
-(defn do-action
-	"Complete a task"
-	[todos todo-num]
-	(let [altered-todo (assoc (nth todos (dec todo-num)) :state :done)]
+(defn alter-todo
+	[todos todo-num todo-key todo-value]
+	(let [altered-todo (assoc (nth todos (dec todo-num)) todo-key todo-value)]
 		(->> todos
 			(#(assoc % (dec todo-num) altered-todo))
 			(#(write-out-file % file-location)))))
+
+(defn do-action
+	[todos todo-num]
+	(alter-todo todos todo-num :state :done))
+
+(defn pri-action
+	[todos todo-num pri]
+	(alter-todo todos todo-num :priority pri))
+
+(defn depri-action
+	[todos todo-num]
+	(alter-todo todos todo-num :priority nil))
 
 (defn lsp-action
 	"List filtering on priority"
@@ -128,6 +139,13 @@
 		(filter #(= (:priority %) pFilter))
 		(#(list-action % filters))))
 
+(defn clean-action
+	"Remove all completed tasks"
+	[todos]
+	(->> todos
+		(filter #(not (= (:state %) :done)))
+		(#(write-out-file % file-location))))
+
 (defn -main [command & args]
 	(let [todos (read-in-file file-location)]
 		(case (string/lower-case command)
@@ -135,7 +153,7 @@
 			"ls" (list-action todos args)
 			"add" (add-action todos file-location (first args))
 			"lsp" (lsp-action todos args)
-			"pri" []
-			"depri" []
+			"pri" (pri-action todos (#(Integer/parseInt %) (first args)) (second args))
+			"depri" (depri-action todos (#(Integer/parseInt %) (first args)))
 			"do" (do-action todos (#(Integer/parseInt %) (first args)))
-			"clean" [])))
+			"clean" (clean-action todos))))
