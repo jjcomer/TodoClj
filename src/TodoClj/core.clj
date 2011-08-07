@@ -14,7 +14,7 @@
 	"Given the description of a task a set will be built with all prefixed words"
 	[regex description]
 	(let [matches (set (filter #(not (nil? %)) (map #(re-find regex %) description)))]
-		(map #(.substring % 1) matches)))
+		(set (map #(.substring % 1) matches))))
 
 (defn find-priority
 	[text]
@@ -50,12 +50,30 @@
 		  :description
 		    (apply str (interpose " " description))}))
 
+(def compare-todos
+	(comparator (fn
+	[[ num1 { s1 :state p1 :priority d1 :description}]
+	 [ num2 { s2 :state p2 :priority d2 :description}]]
+	 (if (not (= s1 s2))
+	 	(= s1 :todo)
+	 	(if (not (= p1 p2))
+	 		(= -1 (compare s1 s2))
+	 		(= -1 (compare d1 d2)))))))
+
+(defn priority-colour
+	[priority]
+	(let [colours [colour/boldred colour/boldgreen colour/boldyellow colour/boldblue colour/boldpurple colour/boldcyan]]
+		(nth colours (mod (int (.charAt priority 0)) (count colours)))))
+
 (defn pretty-print
 	"Convert a todo map into a string"
 	[{ state :state priority :priority description :description}]
 	(let [state-text (if(= :done state) "X" "")
-		  priority-text (if priority (str "(" priority ")") "")]
-			(string/trim (apply str (interpose " " [state-text priority-text description])))))
+		  priority-text (if priority (str "(" priority ")") "")
+		  final-text (string/trim (apply str (interpose " " [state-text priority-text description])))]
+		(if priority
+			(colour/add-foreground-colour (priority-colour priority) final-text)
+			final-text)))
 
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
@@ -77,11 +95,25 @@
 		(println (str "TODO: '" (pretty-print new-todo) "' added on line " (inc (count todos))))
 		(write-out-file (conj todos new-todo) file-location)))
 
+(defn list-action
+	"Lists out todos"
+	[todos filters]
+	(let [contexts (find-prefixed-words context-regex filters)
+		  projects (find-prefixed-words project-regex filters)]
+		  (->> todos
+			  (filter #(or (= contexts #{}) (seq/find-first (:contexts %) contexts)))
+			  (filter #(or (= projects #{}) (seq/find-first (:projects %) projects)))
+			  (seq/indexed)
+			  (sort compare-todos)
+			  (map (fn [[tnum todo]] [tnum (pretty-print todo)]))
+			  (map #(format "%03d:\t%s%n" (inc (first %)) (second %)))
+			  (apply print))))
+
 (defn -main [command & args]
 	(let [todos (read-in-file file-location)]
 		(case (string/lower-case command)
 			"list" []
-			"ls" (println (colour/add-colour colour/boldred colour/blue "Hello World"))
+			"ls" (list-action todos args)
 			"add" (add-action todos file-location (first args))
 			"lsp" []
 			"pri" []
