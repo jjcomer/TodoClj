@@ -99,14 +99,18 @@
 		(println (str "TODO: '" (pretty-print new-todo true) "' added on line " (inc (count todos))))
 		(write-out-file (conj todos new-todo) file-location)))
 
+(defn find-matches
+	[todo matches todo-key]
+		(every? #(not (nil? %)) (map #((todo-key todo) %) matches)))
+
 (defn list-action
 	"Lists out todos"
 	[todos filters]
 	(let [contexts (find-prefixed-words context-regex filters)
 		  projects (find-prefixed-words project-regex filters)]
 		  (->> todos
-			  (filter #(or (= contexts #{}) (seq/find-first (:contexts %) contexts)))
-			  (filter #(or (= projects #{}) (seq/find-first (:projects %) projects)))
+			  (filter #(or (= contexts #{}) (find-matches % contexts :contexts)))
+			  (filter #(or (= projects #{}) (find-matches % projects :projects)))
 			  (map #(vector (:position %) %))
 			  (sort compare-todos)
 			  (map (fn [[tnum todo]] [tnum (pretty-print todo true)]))
@@ -121,16 +125,16 @@
 			(#(write-out-file % file-location)))))
 
 (defn do-action
-	[todos todo-num]
-	(alter-todo todos todo-num :state :done))
+	[todos [todo-num & args]]
+	(alter-todo todos (Integer/parseInt todo-num) :state :done))
 
 (defn pri-action
-	[todos todo-num pri]
-	(alter-todo todos todo-num :priority pri))
+	[todos [todo-num pri & args]]
+	(alter-todo todos (Integer/parseInt todo-num) :priority pri))
 
 (defn depri-action
-	[todos todo-num]
-	(alter-todo todos todo-num :priority nil))
+	[todos [todo-num & args]]
+	(alter-todo todos (Integer/parseInt todo-num) :priority nil))
 
 (defn lsp-action
 	"List filtering on priority"
@@ -149,11 +153,11 @@
 (defn -main [command & args]
 	(let [todos (read-in-file file-location)]
 		(case (string/lower-case command)
-			"list" (println args)
+			"list" (list-action todos args)
 			"ls" (list-action todos args)
 			"add" (add-action todos file-location (first args))
 			"lsp" (lsp-action todos args)
-			"pri" (pri-action todos (#(Integer/parseInt %) (first args)) (second args))
-			"depri" (depri-action todos (#(Integer/parseInt %) (first args)))
-			"do" (do-action todos (#(Integer/parseInt %) (first args)))
+			"pri" (pri-action todos args)
+			"depri" (depri-action todos args)
+			"do" (do-action todos args)
 			"clean" (clean-action todos))))
