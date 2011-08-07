@@ -109,16 +109,24 @@
 			  (sort compare-todos)
 			  (map (fn [[tnum todo]] [tnum (pretty-print todo true)]))
 			  (map #(format "%03d:\t%s%n" (inc (first %)) (second %)))
-			  (apply print))))
+			  (apply println))))
+
+(defn do-action
+	"Complete a task"
+	[todos todo-num]
+	(let [altered-todo (assoc (nth todos (dec todo-num)) :state :done)]
+		(->> todos
+			(#(assoc % (dec todo-num) altered-todo))
+			(#(write-out-file % file-location)))))
 
 (defn -main [command & args]
 	(let [todos (read-in-file file-location)]
 		(case (string/lower-case command)
-			"list" (print args)
+			"list" (println args)
 			"ls" (list-action todos args)
 			"add" (add-action todos file-location (first args))
 			"lsp" []
 			"pri" []
 			"depri" []
-			"do" []
+			"do" (do-action todos (#(Integer/parseInt %) (first args)))
 			"clean" [])))
