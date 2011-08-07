@@ -9,6 +9,7 @@
 (def project-regex #"\+\S+")
 (def priority-regex #"\([A-Za-z]\)")
 (def date-regex #"\d{4}-\d{2}-\d{2}")
+(def counter (let [count (ref 0)] #(dosync (alter count inc))))
 
 (defn find-prefixed-words
 	"Given the description of a task a set will be built with all prefixed words"
@@ -39,7 +40,9 @@
 		  						(if (or (= state :done) priority)
 		  							(rest raw)
 		  							raw))]
-		{ :state
+		{ :position
+			(counter)
+		  :state
 			state
 		  :priority
 		  	priority
@@ -81,7 +84,6 @@
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
 	(if (fs/exists? file-location)
-		;index will be added only when necessary
 		(into [] (map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
 		[]))
 
@@ -105,10 +107,10 @@
 		  (->> todos
 			  (filter #(or (= contexts #{}) (seq/find-first (:contexts %) contexts)))
 			  (filter #(or (= projects #{}) (seq/find-first (:projects %) projects)))
-			  (seq/indexed)
+			  (map #(vector (:position %) %))
 			  (sort compare-todos)
 			  (map (fn [[tnum todo]] [tnum (pretty-print todo true)]))
-			  (map #(format "%03d:\t%s%n" (inc (first %)) (second %)))
+			  (map #(format "%03d:\t%s%n" (first %) (second %)))
 			  (apply println))))
 
 (defn do-action
@@ -119,13 +121,20 @@
 			(#(assoc % (dec todo-num) altered-todo))
 			(#(write-out-file % file-location)))))
 
+(defn lsp-action
+	"List filtering on priority"
+	[todos [pFilter & filters]]
+	(->> todos
+		(filter #(= (:priority %) pFilter))
+		(#(list-action % filters))))
+
 (defn -main [command & args]
 	(let [todos (read-in-file file-location)]
 		(case (string/lower-case command)
 			"list" (println args)
 			"ls" (list-action todos args)
 			"add" (add-action todos file-location (first args))
-			"lsp" []
+			"lsp" (lsp-action todos args)
 			"pri" []
 			"depri" []
 			"do" (do-action todos (#(Integer/parseInt %) (first args)))
