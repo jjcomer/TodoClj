@@ -29,46 +29,62 @@
 
 (defn parse-line
 	"This function is to be used in the mapping of the file"
-	[[type & raw-desc]]
-	(let [description (apply str (interpose " " raw-desc))]
+	[raw]
+	(let [state (if (= "X" (first raw)) :done :todo)
+		  priority (find-priority (if (= state :done)
+		  							(second raw)
+		  							(first raw)))
+		  description (if (and (= state :done) priority)
+		  						(rest (rest raw))
+		  						(if (or (= state :done) priority)
+		  							(rest raw)
+		  							raw))]
 		{ :state
-			(if (= "X" type)
-				:done
-				:todo)
+			state
 		  :priority
-		  	(find-priority type)
-		  :date
-		  	(find-date (first raw-desc))
+		  	priority
 		  :contexts
-		  	(find-prefixed-words context-regex raw-desc)
+		  	(find-prefixed-words context-regex description)
 		  :projects
-		  	(find-prefixed-words project-regex raw-desc)
+		  	(find-prefixed-words project-regex description)
 		  :description
-		    description}))
+		    (apply str (interpose " " description))}))
 
 (defn pretty-print
 	"Convert a todo map into a string"
-	[{ state :state priority :priority date :date description :description}]
+	[{ state :state priority :priority description :description}]
 	(let [state-text (if(= :done state) "X" "")
-		  priority-text (if (not (nil? priority)) (str "(" priority ")") "")]
-		(apply str (interpose " " [state-text priority-text date description]))))
+		  priority-text (if priority (str "(" priority ")") "")]
+			(string/trim (apply str (interpose " " [state-text priority-text description])))))
 
 (defn read-in-file
 	"Read in and convert the Todo file into an internal representation"
 	[file-location]
 	(if (fs/exists? file-location)
-		(seq/indexed (map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
+		;index will be added only when necessary
+		(into [] (map #(parse-line (string/split % #" ")) (io/read-lines file-location)))
 		[]))
 
 (defn write-out-file
 	"Write the pretty print version of the Todo Items to a file"
 	[todo-items file-location]
-	(io/write-lines file-location (map #(string/trim (pretty-print %)) todo-items)))
+	(io/write-lines file-location (map pretty-print todo-items)))
+
+(defn add-action
+	"Adds a new Todo task"
+	[todos file-location raw]
+	(let [new-todo (parse-line (string/split raw #" "))]
+		(println (str "TODO: '" (pretty-print new-todo) "' added on line " (inc (count todos))))
+		(write-out-file (conj todos new-todo) file-location)))
 
 (defn -main [command & args]
-	(case (string/lower-case command)
-		"list" []
-		"ls" (println (colour/add-colour colour/boldred colour/blue "Hello World"))
-		"add" (println (colour/add-colour colour/boldblue colour/purple (first args)))
-		"update" []))
-
+	(let [todos (read-in-file file-location)]
+		(case (string/lower-case command)
+			"list" []
+			"ls" (println (colour/add-colour colour/boldred colour/blue "Hello World"))
+			"add" (add-action todos file-location (first args))
+			"lsp" []
+			"pri" []
+			"depri" []
+			"do" []
+			"clean" [])))
