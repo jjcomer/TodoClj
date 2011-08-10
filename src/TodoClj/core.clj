@@ -9,6 +9,7 @@
 (def project-regex #"\+\S+")
 (def priority-regex #"\([A-Za-z]\)")
 (def date-regex #"\d{4}-\d{2}-\d{2}")
+(def isNotWindows (not (re-find #"[Ww]indows" (System/getProperty "os.name"))))
 (def counter (let [count (ref 0)] #(dosync (alter count inc))))
 
 (defn find-prefixed-words
@@ -96,7 +97,7 @@
 	"Adds a new Todo task"
 	[todos file-location raw]
 	(let [new-todo (parse-line (string/split raw #" "))]
-		(println (str "TODO: '" (pretty-print new-todo true) "' added on line " (inc (count todos))))
+		(println (str "TODO: '" (pretty-print new-todo (and isNotWindows true)) "' added on line " (inc (count todos))))
 		(write-out-file (conj todos new-todo) file-location)))
 
 (defn find-matches
@@ -113,7 +114,7 @@
 			  (filter #(or (= projects #{}) (find-matches % projects :projects)))
 			  (map #(vector (:position %) %))
 			  (sort compare-todos)
-			  (map (fn [[tnum todo]] [tnum (pretty-print todo true)]))
+			  (map (fn [[tnum todo]] [tnum (pretty-print todo (and isNotWindows true))]))
 			  (map #(format "%03d:\t%s%n" (first %) (second %)))
 			  (apply println))))
 
