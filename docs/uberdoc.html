@@ -2527,150 +2527,153 @@ $(document).ready(function() {
 
 })
 </script><title>TodoClj -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">TodoClj</h1><h2 class="project-version">1.0.1-SNAPSHOT</h2><br /><p>A Todo manager written in Clojure</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.2.1</td></tr><tr><td class="dep-name">org.clojure/clojure-contrib</td><td class="dotted"><hr /></td><td class="dep-version">1.2.0</td></tr><tr><td class="dep-name">fs</td><td class="dotted"><hr /></td><td class="dep-version">0.8.1</td></tr><tr><td class="dep-name">cljcolour</td><td class="dotted"><hr /></td><td class="dep-version">1.0.4</td></tr></table></div><div class="dependencies"><h3>dev dependencies</h3><table><tr><td class="dep-name">lein-marginalia</td><td class="dotted"><hr /></td><td class="dep-version">0.6.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#TodoClj.actions">TodoClj.actions</a></li><li><a href="#TodoClj.core">TodoClj.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#TodoClj.actions" name="TodoClj.actions"><h1 class="project-name">TodoClj.actions</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(ns TodoClj.actions
-	:require [clojure.string :as string])</pre></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#TodoClj.core" name="TodoClj.core"><h1 class="project-name">TodoClj.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Josh Comer - 2011</p>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.2.1</td></tr><tr><td class="dep-name">org.clojure/clojure-contrib</td><td class="dotted"><hr /></td><td class="dep-version">1.2.0</td></tr><tr><td class="dep-name">fs</td><td class="dotted"><hr /></td><td class="dep-version">0.8.1</td></tr><tr><td class="dep-name">cljcolour</td><td class="dotted"><hr /></td><td class="dep-version">1.0.4</td></tr></table></div><div class="dependencies"><h3>dev dependencies</h3><table><tr><td class="dep-name">lein-marginalia</td><td class="dotted"><hr /></td><td class="dep-version">0.6.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#TodoClj.core">TodoClj.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#TodoClj.core" name="TodoClj.core"><h1 class="project-name">TodoClj.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>TodoClj is my attempt to learn Clojure
+The idea behind the project is to imitate the functionality of
+<a href="http://todotxt.com">Todo.txt</a></p>
 </td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(ns TodoClj.core
-	(:require [clojure.contrib [duck-streams :as io] [seq-utils :as seq]] [clojure.string :as string] [fs] [cljcolour :as colour])
-	(:gen-class))</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def file-location &quot;Todo.txt&quot;)
-(def context-regex #&quot;@\S+&quot;)
-(def project-regex #&quot;\+\S+&quot;)
-(def priority-regex #&quot;\([A-Za-z]\)&quot;)
-(def date-regex #&quot;\d{4}-\d{2}-\d{2}&quot;)
-(def isNotWindows (not (re-find #&quot;[Ww]indows&quot; (System/getProperty &quot;os.name&quot;))))
-(def counter (let [count (ref 0)] #(dosync (alter count inc))))</pre></tr><tr><td class="docs">
+    (:use [clojure.contrib [duck-streams :only (read-lines write-lines)]]
+          [clojure.string :only (upper-case split trim)]
+          [fs :only (exists?)]
+          [cljcolour])
+    (:gen-class))</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def file-location &quot;Todo.txt&quot;)</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def context-regex #&quot;@\S+&quot;)</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def project-regex #&quot;\+\S+&quot;)</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def priority-regex #&quot;\([A-Za-z]\)&quot;)</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def date-regex #&quot;\d{4}-\d{2}-\d{2}&quot;)</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def isNotWindows (not (re-find #&quot;[Ww]indows&quot; (System/getProperty &quot;os.name&quot;))))</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def counter (let [count (ref 0)] #(dosync (alter count inc))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn find-prefixed-words
-	&quot;Given the description of a task a set will be built with all prefixed words&quot;
-	[regex description]
-	(let [matches (set (filter #(not (nil? %)) (map #(re-find regex %) description)))]
-		(set (map #(.substring % 1) matches))))</pre></tr><tr><td class="docs">
+    &quot;Given the description of a task a set will be built with all prefixed words&quot;
+    [regex description]
+    (let [matches (set (filter #(not (nil? %)) (map #(re-find regex %) description)))]
+        (set (map #(.substring % 1) matches))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn find-priority
-	[text]
-	(let [match (re-find priority-regex text)]
-		(if (nil? match)
-			nil
-			(string/upper-case (.substring match 1 2)))))</pre></tr><tr><td class="docs">
+    [text]
+    (let [match (re-find priority-regex text)]
+        (if (nil? match)
+            nil
+            (upper-case (.substring match 1 2)))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn find-date
-	[text]
-	(re-find date-regex text))</pre></tr><tr><td class="docs">
+    [text]
+    (re-find date-regex text))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn parse-line
-	&quot;This function is to be used in the mapping of the file&quot;
-	[raw]
-	(let [state (if (= &quot;X&quot; (first raw)) :done :todo)
-		  priority (find-priority (if (= state :done)
-		  							(second raw)
-		  							(first raw)))
-		  description (if (and (= state :done) priority)
-		  						(rest (rest raw))
-		  						(if (or (= state :done) priority)
-		  							(rest raw)
-		  							raw))]
-		{ :position
-			(counter)
-		  :state
-			state
-		  :priority
-		  	priority
-		  :contexts
-		  	(find-prefixed-words context-regex description)
-		  :projects
-		  	(find-prefixed-words project-regex description)
-		  :description
-		    (apply str (interpose &quot; &quot; description))}))</pre></tr><tr><td class="docs">
+    &quot;This function is to be used in the mapping of the file&quot;
+    [raw]
+    (let [state (if (= &quot;X&quot; (first raw)) :done :todo)
+          priority (find-priority (if (= state :done)
+                                    (second raw)
+                                    (first raw)))
+          description (if (and (= state :done) priority)
+                                (rest (rest raw))
+                                (if (or (= state :done) priority)
+                                    (rest raw)
+                                    raw))]
+        { :position
+            (counter)
+          :state
+            state
+          :priority
+            priority
+          :contexts
+            (find-prefixed-words context-regex description)
+          :projects
+            (find-prefixed-words project-regex description)
+          :description
+            (apply str (interpose &quot; &quot; description))}))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(def compare-todos
-	(comparator (fn
-	[[ num1 { s1 :state p1 :priority d1 :description}]
-	 [ num2 { s2 :state p2 :priority d2 :description}]]
-	 (let [tp1 (if p1 p1 &quot;[&quot;)
-	 	   tp2 (if p2 p2 &quot;[&quot;)]
-	 (if (not (= s1 s2))
-	 	(= s1 :todo)
-	 	(if (not (= tp1 tp2))
-	 		(&gt; 0 (compare tp1 tp2))
-	 		(&gt; 0 (compare d1 d2))))))))</pre></tr><tr><td class="docs">
+    (comparator (fn
+    [[ num1 { s1 :state p1 :priority d1 :description}]
+     [ num2 { s2 :state p2 :priority d2 :description}]]
+     (let [tp1 (if p1 p1 &quot;[&quot;)
+           tp2 (if p2 p2 &quot;[&quot;)]
+     (if (not (= s1 s2))
+        (= s1 :todo)
+        (if (not (= tp1 tp2))
+            (&gt; 0 (compare tp1 tp2))
+            (&gt; 0 (compare d1 d2))))))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn priority-colour
-	[priority]
-	(let [colours [colour/boldred colour/boldgreen colour/boldyellow colour/boldblue colour/boldpurple colour/boldcyan]]
-		(nth colours (mod (int (.charAt priority 0)) (count colours)))))</pre></tr><tr><td class="docs">
+    [priority]
+    (let [colours [boldred boldgreen boldyellow boldblue boldpurple boldcyan]]
+        (nth colours (mod (int (.charAt priority 0)) (count colours)))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn pretty-print
-	&quot;Convert a todo map into a string&quot;
-	[{ state :state priority :priority description :description} use-colour]
-	(let [state-text (if(= :done state) &quot; X&quot; )
-		  priority-text (if priority (str &quot;(&quot; priority &quot;)&quot;) )
-		  final-text (string/trim (apply str (interpose &quot; &quot; [state-text priority-text description])))]
-		(if (and use-colour priority)
-			(colour/add-foreground-colour (priority-colour priority) final-text)
-			final-text)))</pre></tr><tr><td class="docs">
+    &quot;Convert a todo map into a string&quot;
+    [{ state :state priority :priority description :description} use-colour]
+    (let [state-text (if(= :done state) &quot; X&quot; )
+          priority-text (if priority (str &quot;(&quot; priority &quot;)&quot;) )
+          final-text (trim (apply str (interpose &quot; &quot; [state-text priority-text description])))]
+        (if (and use-colour priority)
+            (add-foreground-colour (priority-colour priority) final-text)
+            final-text)))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn read-in-file
-	&quot;Read in and convert the Todo file into an internal representation&quot;
-	[file-location]
-	(if (fs/exists? file-location)
-		(into [] (map #(parse-line (string/split % #&quot; &quot;)) (io/read-lines file-location)))
-		[]))</pre></tr><tr><td class="docs">
+    &quot;Read in and convert the Todo file into an internal representation&quot;
+    [file-location]
+    (if (exists? file-location)
+        (into [] (map #(parse-line (split % #&quot; &quot;)) (read-lines file-location)))
+        []))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn write-out-file
-	&quot;Write the pretty print version of the Todo Items to a file&quot;
-	[todo-items file-location]
-	(io/write-lines file-location (map #(pretty-print % false) todo-items)))</pre></tr><tr><td class="docs">
+    &quot;Write the pretty print version of the Todo Items to a file&quot;
+    [todo-items file-location]
+    (write-lines file-location (map #(pretty-print % false) todo-items)))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn add-action
-	&quot;Adds a new Todo task&quot;
-	[todos file-location raw]
-	(let [new-todo (parse-line (string/split raw #&quot; &quot;))]
-		(println (str &quot;TODO: '&quot; (pretty-print new-todo (and isNotWindows true)) &quot;' added on line &quot; (inc (count todos))))
-		(write-out-file (conj todos new-todo) file-location)))</pre></tr><tr><td class="docs">
+    &quot;Adds a new Todo task&quot;
+    [todos file-location raw]
+    (let [new-todo (parse-line (split raw #&quot; &quot;))]
+        (println (str &quot;TODO: '&quot; (pretty-print new-todo (and isNotWindows true)) &quot;' added on line &quot; (inc (count todos))))
+        (write-out-file (conj todos new-todo) file-location)))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn find-matches
-	[todo matches todo-key]
-		(every? #(not (nil? %)) (map #((todo-key todo) %) matches)))</pre></tr><tr><td class="docs">
+    [todo matches todo-key]
+        (every? #(not (nil? %)) (map #((todo-key todo) %) matches)))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn list-action
-	&quot;Lists out todos&quot;
-	[todos filters]
-	(let [contexts (find-prefixed-words context-regex filters)
-		  projects (find-prefixed-words project-regex filters)]
-		  (-&gt;&gt; todos
-			  (filter #(or (= contexts #{}) (find-matches % contexts :contexts)))
-			  (filter #(or (= projects #{}) (find-matches % projects :projects)))
-			  (map #(vector (:position %) %))
-			  (sort compare-todos)
-			  (map (fn [[tnum todo]] [tnum (pretty-print todo (and isNotWindows true))]))
-			  (map #(format &quot;%03d:\t%s%n&quot; (first %) (second %)))
-			  (apply println))))</pre></tr><tr><td class="docs">
+    &quot;Lists out todos&quot;
+    [todos filters]
+    (let [contexts (find-prefixed-words context-regex filters)
+          projects (find-prefixed-words project-regex filters)]
+          (-&gt;&gt; todos
+              (filter #(or (= contexts #{}) (find-matches % contexts :contexts)))
+              (filter #(or (= projects #{}) (find-matches % projects :projects)))
+              (map #(vector (:position %) %))
+              (sort compare-todos)
+              (map (fn [[tnum todo]] [tnum (pretty-print todo (and isNotWindows true))]))
+              (map #(format &quot;%03d:\t%s%n&quot; (first %) (second %)))
+              (apply println))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn alter-todo
-	[todos todo-num todo-key todo-value]
-	(let [altered-todo (assoc (nth todos (dec todo-num)) todo-key todo-value)]
-		(-&gt;&gt; todos
-			(#(assoc % (dec todo-num) altered-todo))
-			(#(write-out-file % file-location)))))</pre></tr><tr><td class="docs">
+    [todos todo-num todo-key todo-value]
+    (let [altered-todo (assoc (nth todos (dec todo-num)) todo-key todo-value)]
+        (-&gt;&gt; todos
+            (#(assoc % (dec todo-num) altered-todo))
+            (#(write-out-file % file-location)))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn do-action
-	[todos [todo-num &amp; args]]
-	(alter-todo todos (Integer/parseInt todo-num) :state :done))</pre></tr><tr><td class="docs">
+    [todos [todo-num &amp; args]]
+    (alter-todo todos (Integer/parseInt todo-num) :state :done))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn pri-action
-	[todos [todo-num pri &amp; args]]
-	(alter-todo todos (Integer/parseInt todo-num) :priority pri))</pre></tr><tr><td class="docs">
+    [todos [todo-num pri &amp; args]]
+    (alter-todo todos (Integer/parseInt todo-num) :priority pri))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn depri-action
-	[todos [todo-num &amp; args]]
-	(alter-todo todos (Integer/parseInt todo-num) :priority nil))</pre></tr><tr><td class="docs">
+    [todos [todo-num &amp; args]]
+    (alter-todo todos (Integer/parseInt todo-num) :priority nil))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn lsp-action
-	&quot;List filtering on priority&quot;
-	[todos [pFilter &amp; filters]]
-	(-&gt;&gt; todos
-		(filter #(= (:priority %) pFilter))
-		(#(list-action % filters))))</pre></tr><tr><td class="docs">
+    &quot;List filtering on priority&quot;
+    [todos [pFilter &amp; filters]]
+    (-&gt;&gt; todos
+        (filter #(= (:priority %) pFilter))
+        (#(list-action % filters))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn clean-action
-	&quot;Remove all completed tasks&quot;
-	[todos]
-	(-&gt;&gt; todos
-		(filter #(not (= (:state %) :done)))
-		(#(write-out-file % file-location))))</pre></tr><tr><td class="docs">
+    &quot;Remove all completed tasks&quot;
+    [todos]
+    (-&gt;&gt; todos
+        (filter #(not (= (:state %) :done)))
+        (#(write-out-file % file-location))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn -main [command &amp; args]
-	(let [todos (read-in-file file-location)]
-		(case (string/lower-case command)
-			&quot;list&quot; (list-action todos args)
-			&quot;ls&quot; (list-action todos args)
-			&quot;add&quot; (add-action todos file-location (first args))
-			&quot;lsp&quot; (lsp-action todos args)
-			&quot;pri&quot; (pri-action todos args)
-			&quot;depri&quot; (depri-action todos args)
-			&quot;do&quot; (do-action todos args)
-			&quot;clean&quot; (clean-action todos))))</pre></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/fogus/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_TodoClj.actions">TodoClj.actions</li><li class="floating-toc-li" id="floating-toc_TodoClj.core">TodoClj.core</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+    (let [todos (read-in-file file-location)]
+        (case (upper-case command)
+            &quot;LIST&quot; (list-action todos args)
+            &quot;LS&quot; (list-action todos args)
+            &quot;ADD&quot; (add-action todos file-location (first args))
+            &quot;LSP&quot; (lsp-action todos args)
+            &quot;PRI&quot; (pri-action todos args)
+            &quot;DEPRI&quot; (depri-action todos args)
+            &quot;DO&quot; (do-action todos args)
+            &quot;CLEAN&quot; (clean-action todos))))</pre></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/fogus/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_TodoClj.core">TodoClj.core</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
        SyntaxHighlighter.all()</script></body></html>
