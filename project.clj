@@ -5,5 +5,6 @@
                  [org.clojure/clojure-contrib "1.2.0"]
                  [fs "0.8.1"]
                  [cljcolour "1.0.4"]]
-  :dev-dependencies [[lein-marginalia "0.6.0"]]
+  :dev-dependencies [[marginalia "0.7.0-SNAPSHOT"]
+                     [slamhound "1.1.1"]]
   :main TodoClj.core)

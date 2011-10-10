@@ -3,24 +3,27 @@
 ;; [Todo.txt](http://todotxt.com)
 
 (ns TodoClj.core
-    (:use [clojure.contrib [duck-streams :only (read-lines write-lines)]]
-          [clojure.string :only (upper-case split trim)]
-          [fs :only (exists?)]
-          [cljcolour])
+  (:use
+    [cljcolour
+     :only
+     [add-foreground-colour
+      boldblue
+      boldcyan
+      boldgreen
+      boldpurple
+      boldred
+      boldyellow]]
+    [clojure.contrib.io :only [read-lines write-lines]]
+    [clojure.string :only [trim upper-case split]]
+    [fs :only [exists?]])
     (:gen-class))
 
 (def file-location "Todo.txt")
-
 (def context-regex #"@\S+")
-
 (def project-regex #"\+\S+")
-
 (def priority-regex #"\([A-Za-z]\)")
-
 (def date-regex #"\d{4}-\d{2}-\d{2}")
-
 (def isNotWindows (not (re-find #"[Ww]indows" (System/getProperty "os.name"))))
-
 (def counter (let [count (ref 0)] #(dosync (alter count inc))))
 
 (defn find-prefixed-words
@@ -148,6 +151,14 @@
     [todos [todo-num & args]]
     (alter-todo todos (Integer/parseInt todo-num) :priority nil))
 
+(defn rm-action
+  "This function deletes a todo from the file"
+  [todos [to-remove & args]]
+  (let [remove-todo (nth todos (dec (Integer/parseInt to-remove)))]
+    (->> todos
+      (remove #(= % remove-todo))
+      (#(write-out-file % file-location)))))
+
 (defn lsp-action
     "List filtering on priority"
     [todos [pFilter & filters]]
@@ -172,4 +183,6 @@
             "PRI" (pri-action todos args)
             "DEPRI" (depri-action todos args)
             "DO" (do-action todos args)
-            "CLEAN" (clean-action todos))))
+            "CLEAN" (clean-action todos)
+            "RM" (rm-action todos args)
+            :else (println "Invalic Command"))))

@@ -2527,7 +2527,7 @@ $(document).ready(function() {
 
 })
 </script><title>TodoClj -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name">TodoClj</h1><h2 class="project-version">1.0.1-SNAPSHOT</h2><br /><p>A Todo manager written in Clojure</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.2.1</td></tr><tr><td class="dep-name">org.clojure/clojure-contrib</td><td class="dotted"><hr /></td><td class="dep-version">1.2.0</td></tr><tr><td class="dep-name">fs</td><td class="dotted"><hr /></td><td class="dep-version">0.8.1</td></tr><tr><td class="dep-name">cljcolour</td><td class="dotted"><hr /></td><td class="dep-version">1.0.4</td></tr></table></div><div class="dependencies"><h3>dev dependencies</h3><table><tr><td class="dep-name">lein-marginalia</td><td class="dotted"><hr /></td><td class="dep-version">0.6.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#TodoClj.core">TodoClj.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#TodoClj.core" name="TodoClj.core"><h1 class="project-name">TodoClj.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>TodoClj is my attempt to learn Clojure
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.2.1</td></tr><tr><td class="dep-name">org.clojure/clojure-contrib</td><td class="dotted"><hr /></td><td class="dep-version">1.2.0</td></tr><tr><td class="dep-name">fs</td><td class="dotted"><hr /></td><td class="dep-version">0.8.1</td></tr><tr><td class="dep-name">cljcolour</td><td class="dotted"><hr /></td><td class="dep-version">1.0.4</td></tr></table></div><div class="dependencies"><h3>dev dependencies</h3><table><tr><td class="dep-name">marginalia</td><td class="dotted"><hr /></td><td class="dep-version">0.7.0-SNAPSHOT</td></tr><tr><td class="dep-name">slamhound</td><td class="dotted"><hr /></td><td class="dep-version">1.1.1</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#TodoClj.core">TodoClj.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#TodoClj.core" name="TodoClj.core"><h1 class="project-name">TodoClj.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>TodoClj is my attempt to learn Clojure
 The idea behind the project is to imitate the functionality of
 <a href="http://todotxt.com">Todo.txt</a></p>
 </td><td class="codes" /></tr><tr><td class="docs">
@@ -2537,13 +2537,13 @@ The idea behind the project is to imitate the functionality of
           [fs :only (exists?)]
           [cljcolour])
     (:gen-class))</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def file-location &quot;Todo.txt&quot;)</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def context-regex #&quot;@\S+&quot;)</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def project-regex #&quot;\+\S+&quot;)</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def priority-regex #&quot;\([A-Za-z]\)&quot;)</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def date-regex #&quot;\d{4}-\d{2}-\d{2}&quot;)</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def isNotWindows (not (re-find #&quot;[Ww]indows&quot; (System/getProperty &quot;os.name&quot;))))</pre></tr><tr><td class="docs">
-</td><td class="codes" /><pre class="brush: clojure">(def counter (let [count (ref 0)] #(dosync (alter count inc))))</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(def file-location &quot;Todo.txt&quot;)
+(def context-regex #&quot;@\S+&quot;)
+(def project-regex #&quot;\+\S+&quot;)
+(def priority-regex #&quot;\([A-Za-z]\)&quot;)
+(def date-regex #&quot;\d{4}-\d{2}-\d{2}&quot;)
+(def isNotWindows (not (re-find #&quot;[Ww]indows&quot; (System/getProperty &quot;os.name&quot;))))
+(def counter (let [count (ref 0)] #(dosync (alter count inc))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn find-prefixed-words
     &quot;Given the description of a task a set will be built with all prefixed words&quot;
     [regex description]
@@ -2653,6 +2653,13 @@ The idea behind the project is to imitate the functionality of
 </td><td class="codes" /><pre class="brush: clojure">(defn depri-action
     [todos [todo-num &amp; args]]
     (alter-todo todos (Integer/parseInt todo-num) :priority nil))</pre></tr><tr><td class="docs">
+</td><td class="codes" /><pre class="brush: clojure">(defn rm-action
+  &quot;This function deletes a todo from the file&quot;
+  [todos [to-remove &amp; args]]
+  (let [remove-todo (nth todos (dec (Integer/parseInt to-remove)))]
+    (-&gt;&gt; todos
+      (remove #(= % remove-todo))
+      (#(write-out-file % file-location)))))</pre></tr><tr><td class="docs">
 </td><td class="codes" /><pre class="brush: clojure">(defn lsp-action
     &quot;List filtering on priority&quot;
     [todos [pFilter &amp; filters]]
@@ -2675,5 +2682,7 @@ The idea behind the project is to imitate the functionality of
             &quot;PRI&quot; (pri-action todos args)
             &quot;DEPRI&quot; (depri-action todos args)
             &quot;DO&quot; (do-action todos args)
-            &quot;CLEAN&quot; (clean-action todos))))</pre></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/fogus/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_TodoClj.core">TodoClj.core</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+            &quot;CLEAN&quot; (clean-action todos)
+            &quot;RM&quot; (rm-action todos args)
+            :else (println &quot;Invalic Command&quot;))))</pre></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/fogus/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_TodoClj.core">TodoClj.core</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
        SyntaxHighlighter.all()</script></body></html>
