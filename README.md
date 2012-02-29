@@ -2,6 +2,8 @@
 
 A todo manager written in Clojure. This is my attempt to learn Clojure.
 
+[![endorse](http://api.coderwall.com/jjcomer/endorsecount.png)](http://coderwall.com/jjcomer)
+
 ##Usage##
 
 See my [blog](http://jjcomer.github.com/blog/2011/08/09/todoclj-1-0-0-is-done/).
